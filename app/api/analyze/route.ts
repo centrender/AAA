@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 LISTING:
 """${cleanListing}"""
 
-Return: {"year": number, "make": "string", "model": "string", "trim": "string or empty", "mileage": number, "askingPrice": number, "location": "string", "listedAgo": "exactly what the listing says about how long it's been listed, e.g. 'Listed 4 weeks ago' or '2 days ago', or 'unknown'", "daysOnMarket": number (your best estimate of days listed from the listedAgo text, 0 if unknown), "describedProblems": "only actual mechanical issues/conditions the seller stated, or 'none stated'"}` }] }],
+Return: {"year": number, "make": "string", "model": "string", "trim": "string or empty", "mileage": number, "askingPrice": number, "location": "string", "listedAgo": "exactly what the listing says about how long it's been listed, e.g. 'Listed 4 weeks ago' or '2 days ago', or 'unknown'", "daysOnMarket": number (your best estimate of days listed from the listedAgo text, 0 if unknown), "regStatus": "current" | "expired" | "nonop" | "unknown" — look for clues: 'tags due', 'registration expired', 'non-op', 'PNO', 'needs smog/reg', 'planned non-operation', 'op last registered 2021', 'tags good til', etc. Default 'unknown' if nothing stated", "regLapsedYears": number — if expired/nonop and you can estimate how many years lapsed from the text, put it here, else 0, "describedProblems": "only actual mechanical issues/conditions the seller stated, or 'none stated'"}` }] }],
       generationConfig: { temperature: 0, responseMimeType: "application/json" },
     });
     const v = parseJSON(extractText(extractData));
@@ -124,6 +124,13 @@ FLIPPER MATH:
 - True resale (what YOU could sell it for after fixing) = a REALISTIC number based on your actual sold comps. Use the MIDDLE of the real comp range you found, not the pessimistic low end. If your search found running examples selling at $2,800-$7,300, a clean running one resells around the middle ($4,000-4,500), NOT the floor. Do not artificially deflate resale — that kills real deals. Only use marketValueLow if the car has described problems or is rough.
 - Your max buy price = roughly 70-80% of true resale MINUS reconditioning costs
 - Costs: reconditioning/fixes + smog ($50-100, +$150 gross polluter risk if CEL) + DMV/title ($200-300)
+- BACK-REGISTRATION (CA, often overlooked, kills margins): The vehicle's regStatus is "${v.regStatus || "unknown"}" and estimated ${v.regLapsedYears || 0} years lapsed. California has NO grace period and stacks penalties hard:
+  * regStatus "current": normal DMV transfer only ($200-300), no penalty
+  * regStatus "expired" or "nonop" with ~1 year lapsed: add ~$400-600 (back reg + 60-80% VLF penalty + CHP late fees)
+  * 2 years lapsed: add ~$600-800 (160% VLF penalty kicks in + stacked $100 reg + $100 CHP late fees)
+  * 3+ years lapsed: add ~$750-1,000+ (multiple years of base reg stacked + max penalties)
+  * regStatus "unknown": don't assume the worst, but add a $150 buffer and FLAG it as a warning to verify tags before buying
+  Fold this into estimatedFixCost-adjacent costs and the dmvFees number. A lapsed-reg car that looks cheap often isn't. Mention it in the negotiation as leverage too — the seller knows those back fees are coming.
 - A real flip needs net profit that scales with HOLD TIME and LIQUIDITY, not a flat number:
   * High liquidity / fast mover (Lexus LS/ES, Toyota, Honda, Mazda — sells in 1-2 weeks): $600+ net is a workable flip. You turn it fast and move on.
   * Moderate liquidity (most cars): $1,000+ net
@@ -164,6 +171,8 @@ Return JSON only:
     "estimatedFixCost": number,
     "smogFee": number,
     "dmvFees": number,
+    "backRegFee": number (estimated CA back-registration/penalty cost based on regStatus, 0 if current),
+    "regNote": "short note on registration status and what it costs, e.g. 'Tags 2yr lapsed — ~$700 in back fees + penalties' or 'Current reg, no penalty' or 'Reg status unknown — verify before buying'",
     "estimatedResaleValue": number,
     "potentialProfit": number,
     "roi": number,
@@ -194,7 +203,7 @@ DEAL RATING:
 
     const potentialProfit =
       a.roi.estimatedResaleValue -
-      (a.negotiation.targetOffer + a.roi.estimatedFixCost + a.roi.smogFee + a.roi.dmvFees);
+      (a.negotiation.targetOffer + a.roi.estimatedFixCost + a.roi.smogFee + a.roi.dmvFees + (a.roi.backRegFee || 0));
 
     return NextResponse.json({
       listing: {

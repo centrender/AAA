@@ -11,7 +11,7 @@ interface Result {
   listing: { askingPrice: number; year: number; make: string; model: string; mileage: number; description: string; location: string; };
   market?: { marketValueLow: number; marketValueTypical: number; marketValueHigh: number; valueBasis: string; isClassicOrCollector: boolean; demandNote: string; };
   diagnostic: { likelyIssue: string; confidenceScore: number; easyFix: string; fixCostLow: number; fixCostHigh: number; isDIYFriendly: boolean; warningFlags: string[]; technicalDetails: string; };
-  roi: { askingPrice: number; trueMarketValue?: number; estimatedFixCost: number; smogFee: number; dmvFees: number; estimatedResaleValue: number; potentialProfit: number; dealRating: string; dealScore: number; verdict?: string; daysOnMarket?: number; domLeverage?: string; };
+  roi: { askingPrice: number; trueMarketValue?: number; estimatedFixCost: number; smogFee: number; dmvFees: number; backRegFee?: number; regNote?: string; estimatedResaleValue: number; potentialProfit: number; dealRating: string; dealScore: number; verdict?: string; daysOnMarket?: number; domLeverage?: string; };
   negotiation: { openingMessage: string; followUpMessage: string; tactic: string; targetOffer: number; shouldSend?: boolean; };
 }
 
@@ -181,12 +181,17 @@ function Results({ r, onReset }: { r: Result; onReset: () => void }) {
             )}
             <div className="card fade-up delay-1" style={{ padding: "20px" }}>
               <div className="label">Cost Breakdown</div>
-              {[["Your Target Offer", N.targetOffer], ["Est. Fix Cost", R.estimatedFixCost], ["Smog + Gross Polluter Risk", R.smogFee], ["DMV / Transfer Fees", R.dmvFees]].map(([l, v]) => (
+              {[["Your Target Offer", N.targetOffer], ["Est. Fix Cost", R.estimatedFixCost], ["Smog + Gross Polluter Risk", R.smogFee], ["DMV / Transfer Fees", R.dmvFees], ...(R.backRegFee && R.backRegFee > 0 ? [["Back Registration + Penalties", R.backRegFee]] : [])].map(([l, v]) => (
                 <div key={String(l)} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
                   <span style={{ fontSize: "14px", color: "var(--muted)" }}>{String(l)}</span>
                   <span className="mono" style={{ fontSize: "13px", color: "var(--red)" }}>− {fmt(Number(v))}</span>
                 </div>
               ))}
+              {R.regNote && (
+                <div style={{ padding: "8px 10px", marginTop: "6px", background: "var(--surface2)", borderLeft: `2px solid ${R.backRegFee && R.backRegFee > 0 ? "var(--yellow)" : "var(--border)"}`, fontSize: "11px", color: "var(--muted)", lineHeight: 1.4 }}>
+                  TAGS: {R.regNote}
+                </div>
+              )}
               <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
                 <span style={{ fontSize: "14px", color: "var(--muted)" }}>Est. Resale (Private Party, LA)</span>
                 <span className="mono" style={{ fontSize: "13px", color: "var(--green)" }}>+ {fmt(R.estimatedResaleValue)}</span>
