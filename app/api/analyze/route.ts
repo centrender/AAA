@@ -121,10 +121,14 @@ FLIPPER MATH:
   * 22-45 days: market rejected this price, strong leverage, seller likely frustrated
   * 45+ days: stale, seller probably desperate, lowball with confidence
   Factor DOM into both your target offer AND the negotiation message tone. A car sitting 4+ weeks justifies a more aggressive offer and you can gently reference that it's "been up a while."
-- True resale (what YOU could sell it for after fixing) = marketValueTypical, maybe marketValueHigh only if genuinely clean
+- True resale (what YOU could sell it for after fixing) = a REALISTIC number based on your actual sold comps. Use the MIDDLE of the real comp range you found, not the pessimistic low end. If your search found running examples selling at $2,800-$7,300, a clean running one resells around the middle ($4,000-4,500), NOT the floor. Do not artificially deflate resale — that kills real deals. Only use marketValueLow if the car has described problems or is rough.
 - Your max buy price = roughly 70-80% of true resale MINUS reconditioning costs
 - Costs: reconditioning/fixes + smog ($50-100, +$150 gross polluter risk if CEL) + DMV/title ($200-300)
-- A real flip needs $1,500+ net profit AND reasonable liquidity (can you actually sell it fast in LA?)
+- A real flip needs net profit that scales with HOLD TIME and LIQUIDITY, not a flat number:
+  * High liquidity / fast mover (Lexus LS/ES, Toyota, Honda, Mazda — sells in 1-2 weeks): $600+ net is a workable flip. You turn it fast and move on.
+  * Moderate liquidity (most cars): $1,000+ net
+  * Low liquidity / long hold (orphan brands, old high-end luxury, project cars): $2,000+ net to justify the risk and months of holding
+  A flipper makes money on VELOCITY, not just margin per car. A quick $700 flip every two weeks beats a $2,500 flip that sits for four months.
 - If asking price is already at or above true market value, this is usually a SKIP regardless of how nice the car sounds
 - Classic/older luxury: low liquidity, long hold times, expensive surprise repairs. Be MORE conservative, not less.
 
@@ -133,7 +137,7 @@ THE OFFER FLOOR (CRITICAL — this separates a flipper from a troll):
 - NEVER make an opening offer below 45% of the seller's asking price. An offer of $250 on a $5,500 car, or any insultingly low number, just gets you blocked and burns the contact forever. Real flippers never do this.
 
 DECIDE shouldSend WITH THIS EXACT PROCESS (do not skip steps):
-1. Compute your MAXIMUM viable buy price = the highest you could pay and still net at least $1,200 profit after all costs (fixes + smog + DMV). This is NOT the ideal lowball — it's the ceiling.
+1. Compute your MAXIMUM viable buy price = the highest you could pay and still net the LIQUIDITY-SCALED minimum profit above (e.g. $600 on a fast-moving Lexus LS, $2,000 on an orphan brand) after all costs (fixes + smog + DMV). This is NOT the ideal lowball — it's the ceiling.
 2. Compare that MAX viable buy to the 45%-of-asking floor.
    - If MAX viable buy >= 45% of asking: a real deal MIGHT exist. shouldSend = true. Set targetOffer to a smart opening number BELOW your max viable buy (so you have room to negotiate up) but still >= 45% of asking. You profit anywhere between your opening and your max.
    - If MAX viable buy < 45% of asking: even paying your absolute ceiling, the offer would be an insult. shouldSend = false, dealRating = SKIP, walk away.
@@ -180,9 +184,10 @@ Return JSON only:
 }
 
 DEAL RATING:
-- PASS: potentialProfit >= 2000 AND good liquidity AND dealScore >= 70
-- MAYBE: potentialProfit >= 800 AND dealScore >= 45
-- SKIP: thin margin, asking >= market value, low liquidity, or risky` }] }],
+- PASS: clears the liquidity-scaled profit minimum comfortably AND shouldSend is true AND dealScore >= 65
+- MAYBE: a real sendable offer exists (shouldSend true) that hits at least the liquidity-scaled minimum profit, even if thin. A fast-moving car with a workable $700+ flip and a 50+ day desperate seller is a MAYBE, not a SKIP.
+- SKIP: only when no offer above the 45% floor can hit even the liquidity-scaled minimum, OR the car is genuinely risky/illiquid. Don't SKIP a liquid car just because margin is thin — that's a MAYBE.
+- dealScore should reflect reality: a thin-but-real flip on a liquid car is 45-60, not 0. Reserve 0-15 for true no-deal situations.` }] }],
       generationConfig: { temperature: 0.3, responseMimeType: "application/json" },
     });
     const a = parseJSON(extractText(analysisData));
