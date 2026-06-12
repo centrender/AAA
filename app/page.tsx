@@ -11,7 +11,7 @@ interface Result {
   listing: { askingPrice: number; year: number; make: string; model: string; mileage: number; description: string; location: string; };
   market?: { marketValueLow: number; marketValueTypical: number; marketValueHigh: number; valueBasis: string; isClassicOrCollector: boolean; demandNote: string; };
   diagnostic: { likelyIssue: string; confidenceScore: number; easyFix: string; fixCostLow: number; fixCostHigh: number; isDIYFriendly: boolean; warningFlags: string[]; technicalDetails: string; };
-  roi: { askingPrice: number; trueMarketValue?: number; estimatedFixCost: number; smogFee: number; dmvFees: number; estimatedResaleValue: number; potentialProfit: number; dealRating: string; dealScore: number; verdict?: string; };
+  roi: { askingPrice: number; trueMarketValue?: number; estimatedFixCost: number; smogFee: number; dmvFees: number; estimatedResaleValue: number; potentialProfit: number; dealRating: string; dealScore: number; verdict?: string; daysOnMarket?: number; domLeverage?: string; };
   negotiation: { openingMessage: string; followUpMessage: string; tactic: string; targetOffer: number; };
 }
 
@@ -67,6 +67,14 @@ function Results({ r, onReset }: { r: Result; onReset: () => void }) {
           <div>
             <div className="display" style={{ fontSize: "32px", fontWeight: 800, lineHeight: 1.1 }}>{L.year} {L.make}<br />{L.model}</div>
             <div className="mono" style={{ fontSize: "11px", color: "var(--muted)", marginTop: "6px" }}>{(L.mileage || 0).toLocaleString()} mi · {fmt(L.askingPrice)} ask</div>
+            {R.daysOnMarket && R.daysOnMarket > 0 ? (
+              <div style={{ marginTop: "8px", display: "inline-flex", alignItems: "center", gap: "6px", padding: "4px 10px", borderRadius: "2px", background: R.daysOnMarket >= 22 ? "rgba(0,232,122,0.08)" : R.daysOnMarket >= 8 ? "rgba(255,184,0,0.08)" : "var(--surface2)", border: `1px solid ${R.daysOnMarket >= 22 ? "var(--green)" : R.daysOnMarket >= 8 ? "var(--yellow)" : "var(--border)"}` }}>
+                <span className="mono" style={{ fontSize: "10px", fontWeight: 600, color: R.daysOnMarket >= 22 ? "var(--green)" : R.daysOnMarket >= 8 ? "var(--yellow)" : "var(--muted)" }}>
+                  {R.daysOnMarket}D ON MARKET
+                </span>
+                {R.domLeverage && <span className="mono" style={{ fontSize: "10px", color: "var(--muted)" }}>· {R.domLeverage}</span>}
+              </div>
+            ) : null}
           </div>
           <div style={{ padding: "10px 14px", border: "1px solid", borderRadius: "2px", textAlign: "center", flexShrink: 0, ...ratingStyle }}>
             <div className="display" style={{ fontSize: "26px", fontWeight: 900 }}>{R.dealRating}</div>

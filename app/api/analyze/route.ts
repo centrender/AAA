@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
 LISTING:
 """${cleanListing}"""
 
-Return: {"year": number, "make": "string", "model": "string", "trim": "string or empty", "mileage": number, "askingPrice": number, "location": "string", "describedProblems": "only actual mechanical issues/conditions the seller stated, or 'none stated'"}` }] }],
+Return: {"year": number, "make": "string", "model": "string", "trim": "string or empty", "mileage": number, "askingPrice": number, "location": "string", "listedAgo": "exactly what the listing says about how long it's been listed, e.g. 'Listed 4 weeks ago' or '2 days ago', or 'unknown'", "daysOnMarket": number (your best estimate of days listed from the listedAgo text, 0 if unknown), "describedProblems": "only actual mechanical issues/conditions the seller stated, or 'none stated'"}` }] }],
       generationConfig: { temperature: 0, responseMimeType: "application/json" },
     });
     const v = parseJSON(extractText(extractData));
@@ -115,6 +115,12 @@ REAL MARKET VALUE (from actual sold comps, ignore seller's hype):
 ${JSON.stringify(market, null, 2)}
 
 FLIPPER MATH:
+- DAYS ON MARKET IS A WEAPON. This car has been listed for ${v.daysOnMarket || 0} days (${v.listedAgo || "unknown"}). The longer it sits unsold at its current price, the more the market has REJECTED that price and the more motivated/tired the seller is. Use this:
+  * 0-7 days: fresh listing, seller still hopeful, less negotiating room, don't tip your hand
+  * 8-21 days: starting to sit, seller getting realistic, moderate leverage
+  * 22-45 days: market rejected this price, strong leverage, seller likely frustrated
+  * 45+ days: stale, seller probably desperate, lowball with confidence
+  Factor DOM into both your target offer AND the negotiation message tone. A car sitting 4+ weeks justifies a more aggressive offer and you can gently reference that it's "been up a while."
 - True resale (what YOU could sell it for after fixing) = marketValueTypical, maybe marketValueHigh only if genuinely clean
 - Your max buy price = roughly 70-80% of true resale MINUS reconditioning costs
 - Costs: reconditioning/fixes + smog ($50-100, +$150 gross polluter risk if CEL) + DMV/title ($200-300)
@@ -145,6 +151,8 @@ Return JSON only:
     "roi": number,
     "dealRating": "PASS" or "MAYBE" or "SKIP",
     "dealScore": 0-100,
+    "daysOnMarket": ${v.daysOnMarket || 0},
+    "domLeverage": "one short phrase on how stale this listing is and what leverage it gives, e.g. 'Sitting 4 weeks — strong leverage' or 'Fresh listing — play it cool'",
     "verdict": "one blunt sentence: is this a real flip or is the seller dreaming?"
   },
   "negotiation": {
