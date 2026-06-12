@@ -9,8 +9,9 @@ function fmt(n: number) {
 
 interface Result {
   listing: { askingPrice: number; year: number; make: string; model: string; mileage: number; description: string; location: string; };
+  market?: { marketValueLow: number; marketValueTypical: number; marketValueHigh: number; valueBasis: string; isClassicOrCollector: boolean; demandNote: string; };
   diagnostic: { likelyIssue: string; confidenceScore: number; easyFix: string; fixCostLow: number; fixCostHigh: number; isDIYFriendly: boolean; warningFlags: string[]; technicalDetails: string; };
-  roi: { askingPrice: number; estimatedFixCost: number; smogFee: number; dmvFees: number; estimatedResaleValue: number; potentialProfit: number; dealRating: string; dealScore: number; };
+  roi: { askingPrice: number; trueMarketValue?: number; estimatedFixCost: number; smogFee: number; dmvFees: number; estimatedResaleValue: number; potentialProfit: number; dealRating: string; dealScore: number; verdict?: string; };
   negotiation: { openingMessage: string; followUpMessage: string; tactic: string; targetOffer: number; };
 }
 
@@ -83,6 +84,12 @@ function Results({ r, onReset }: { r: Result; onReset: () => void }) {
             <Bar pct={R.dealScore} color={barColor} />
           </div>
         </div>
+        {R.verdict && (
+          <div style={{ marginTop: "8px", padding: "12px 16px", background: "var(--surface2)", borderLeft: `2px solid ${profitColor}`, borderRadius: "2px" }}>
+            <div className="mono" style={{ fontSize: "9px", letterSpacing: "0.12em", color: "var(--muted)", marginBottom: "4px" }}>THE VERDICT</div>
+            <div style={{ fontSize: "13px", color: "var(--text)", lineHeight: 1.5 }}>{R.verdict}</div>
+          </div>
+        )}
       </div>
 
       <div className="tabs" style={{ marginTop: "20px" }}>
@@ -140,9 +147,33 @@ function Results({ r, onReset }: { r: Result; onReset: () => void }) {
         )}
         {tab === "roi" && (
           <>
-            <div className="card fade-up" style={{ padding: "20px" }}>
+            {r.market && (
+              <div className="card fade-up" style={{ padding: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                  <div className="label" style={{ margin: 0 }}>Real Market Value</div>
+                  <span className="mono" style={{ fontSize: "9px", padding: "3px 7px", border: "1px solid var(--border)", borderRadius: "2px", color: "var(--muted)" }}>SOLD COMPS · NOT ASKING</span>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginBottom: "12px" }}>
+                  {[["LOW", r.market.marketValueLow, "var(--muted)"], ["TYPICAL", r.market.marketValueTypical, "var(--orange)"], ["HIGH", r.market.marketValueHigh, "var(--muted)"]].map(([l, val, c]) => (
+                    <div key={String(l)} style={{ background: "var(--surface2)", padding: "10px", textAlign: "center" }}>
+                      <div className="mono" style={{ fontSize: "8px", color: "var(--muted)", marginBottom: "3px" }}>{String(l)}</div>
+                      <div className="display" style={{ fontSize: "20px", fontWeight: 700, color: c as string }}>{fmt(Number(val))}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderTop: "1px solid var(--border)" }}>
+                  <span className="mono" style={{ fontSize: "10px", color: "var(--muted)" }}>SELLER ASKING</span>
+                  <span className="mono" style={{ fontSize: "11px", color: R.askingPrice > r.market.marketValueTypical ? "var(--red)" : "var(--green)" }}>
+                    {fmt(R.askingPrice)} {R.askingPrice > r.market.marketValueTypical ? "▲ OVER MARKET" : "▼ under market"}
+                  </span>
+                </div>
+                <div style={{ fontSize: "12px", color: "var(--muted)", lineHeight: 1.5, marginTop: "8px" }}>{r.market.valueBasis}</div>
+                {r.market.demandNote && <div style={{ fontSize: "12px", color: "#999", lineHeight: 1.5, marginTop: "6px" }}>Liquidity: {r.market.demandNote}</div>}
+              </div>
+            )}
+            <div className="card fade-up delay-1" style={{ padding: "20px" }}>
               <div className="label">Cost Breakdown</div>
-              {[["Asking Price", R.askingPrice], ["Est. Fix Cost", R.estimatedFixCost], ["Smog + Gross Polluter Risk", R.smogFee], ["DMV / Transfer Fees", R.dmvFees]].map(([l, v]) => (
+              {[["Your Target Offer", N.targetOffer], ["Est. Fix Cost", R.estimatedFixCost], ["Smog + Gross Polluter Risk", R.smogFee], ["DMV / Transfer Fees", R.dmvFees]].map(([l, v]) => (
                 <div key={String(l)} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: "1px solid var(--border)" }}>
                   <span style={{ fontSize: "14px", color: "var(--muted)" }}>{String(l)}</span>
                   <span className="mono" style={{ fontSize: "13px", color: "var(--red)" }}>− {fmt(Number(v))}</span>
