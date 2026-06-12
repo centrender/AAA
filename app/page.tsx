@@ -12,7 +12,7 @@ interface Result {
   market?: { marketValueLow: number; marketValueTypical: number; marketValueHigh: number; valueBasis: string; isClassicOrCollector: boolean; demandNote: string; };
   diagnostic: { likelyIssue: string; confidenceScore: number; easyFix: string; fixCostLow: number; fixCostHigh: number; isDIYFriendly: boolean; warningFlags: string[]; technicalDetails: string; };
   roi: { askingPrice: number; trueMarketValue?: number; estimatedFixCost: number; smogFee: number; dmvFees: number; estimatedResaleValue: number; potentialProfit: number; dealRating: string; dealScore: number; verdict?: string; daysOnMarket?: number; domLeverage?: string; };
-  negotiation: { openingMessage: string; followUpMessage: string; tactic: string; targetOffer: number; };
+  negotiation: { openingMessage: string; followUpMessage: string; tactic: string; targetOffer: number; shouldSend?: boolean; };
 }
 
 function Loader({ step }: { step: number }) {
@@ -207,25 +207,46 @@ function Results({ r, onReset }: { r: Result; onReset: () => void }) {
         )}
         {tab === "nego" && (
           <>
-            <div style={{ background: "var(--surface)", border: "1px solid var(--orange)", borderRadius: "2px", padding: "20px" }} className="fade-up">
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-                <div className="label" style={{ margin: 0 }}>Strategy</div>
-                <div className="mono" style={{ fontSize: "11px", color: "var(--orange)" }}>TARGET {fmt(N.targetOffer)}</div>
-              </div>
-              <div style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.6 }}>{N.tactic}</div>
-            </div>
-            {[{ id: "open", label: "First Message", sub: "Send this now", t: N.openingMessage }, { id: "follow", label: "24h Follow-Up", sub: "If no response", t: N.followUpMessage }].map(({ id, label, sub, t }) => (
-              <div key={id} className="card fade-up delay-1" style={{ padding: "20px" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
-                  <div>
-                    <div className="label" style={{ margin: 0 }}>{label}</div>
-                    <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "2px" }}>{sub}</div>
+            {N.shouldSend === false ? (
+              <>
+                <div style={{ background: "rgba(255,59,59,0.05)", border: "1px solid var(--red)", borderRadius: "2px", padding: "20px" }} className="fade-up">
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                    <div className="display" style={{ fontSize: "24px", fontWeight: 800, color: "var(--red)" }}>WALK AWAY</div>
+                    <div className="mono" style={{ fontSize: "10px", color: "var(--muted)" }}>NO OFFER WORTH SENDING</div>
                   </div>
-                  <button className={`btn-ghost ${copied === id ? "copied" : ""}`} onClick={() => copy(t, id)} style={{ flexShrink: 0 }}>{copied === id ? "COPIED ✓" : "COPY"}</button>
+                  <div style={{ fontSize: "13px", color: "#ddd", lineHeight: 1.7 }}>{N.openingMessage}</div>
                 </div>
-                <div style={{ fontSize: "13px", color: "var(--text)", lineHeight: 1.7, whiteSpace: "pre-wrap", background: "var(--surface2)", padding: "14px", borderRadius: "2px" }}>{t}</div>
-              </div>
-            ))}
+                <div className="card fade-up delay-1" style={{ padding: "20px" }}>
+                  <div className="label">Why</div>
+                  <div style={{ fontSize: "13px", color: "#bbb", lineHeight: 1.6 }}>{N.tactic}</div>
+                  <div style={{ marginTop: "12px", paddingTop: "12px", borderTop: "1px solid var(--border)", fontSize: "12px", color: "var(--muted)", lineHeight: 1.5 }}>
+                    The only profitable offer here would be an insult that gets you blocked. A real flipper never opens below ~45% of asking. This one isn't worth the message.
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ background: "var(--surface)", border: "1px solid var(--orange)", borderRadius: "2px", padding: "20px" }} className="fade-up">
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
+                    <div className="label" style={{ margin: 0 }}>Strategy</div>
+                    <div className="mono" style={{ fontSize: "11px", color: "var(--orange)" }}>TARGET {fmt(N.targetOffer)}</div>
+                  </div>
+                  <div style={{ fontSize: "13px", color: "#ccc", lineHeight: 1.6 }}>{N.tactic}</div>
+                </div>
+                {[{ id: "open", label: "First Message", sub: "Send this now", t: N.openingMessage }, { id: "follow", label: "24h Follow-Up", sub: "If no response", t: N.followUpMessage }].filter(m => m.t && m.t.trim()).map(({ id, label, sub, t }) => (
+                  <div key={id} className="card fade-up delay-1" style={{ padding: "20px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "14px" }}>
+                      <div>
+                        <div className="label" style={{ margin: 0 }}>{label}</div>
+                        <div style={{ fontSize: "11px", color: "var(--muted)", marginTop: "2px" }}>{sub}</div>
+                      </div>
+                      <button className={`btn-ghost ${copied === id ? "copied" : ""}`} onClick={() => copy(t, id)} style={{ flexShrink: 0 }}>{copied === id ? "COPIED ✓" : "COPY"}</button>
+                    </div>
+                    <div style={{ fontSize: "13px", color: "var(--text)", lineHeight: 1.7, whiteSpace: "pre-wrap", background: "var(--surface2)", padding: "14px", borderRadius: "2px" }}>{t}</div>
+                  </div>
+                ))}
+              </>
+            )}
           </>
         )}
       </div>

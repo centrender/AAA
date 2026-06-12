@@ -128,6 +128,14 @@ FLIPPER MATH:
 - If asking price is already at or above true market value, this is usually a SKIP regardless of how nice the car sounds
 - Classic/older luxury: low liquidity, long hold times, expensive surprise repairs. Be MORE conservative, not less.
 
+THE OFFER FLOOR (CRITICAL — this separates a flipper from a troll):
+- Your max PROFITABLE buy price and your OPENING OFFER are different numbers. Never confuse them.
+- NEVER make an opening offer below 45% of the seller's asking price. An offer of $250 on a $5,500 car, or any insultingly low number, just gets you blocked and burns the contact forever. Real flippers never do this.
+- If the math says you'd need to pay LESS than ~45-50% of asking to make a profit, then there is NO viable offer. In that case: dealRating = SKIP, and the negotiation should be a "shouldSend: false" walk-away, NOT a lowball insult.
+- When shouldSend is false, the openingMessage should explain to the USER (Faruk) why there's no offer worth making here, in plain flipper language. Do not write a message to send to the seller.
+- When shouldSend is true, the opening offer must be a real, human number the seller might actually counter — low but not insulting, and always >= 45% of asking.
+- The targetOffer shown must respect this floor. If your profitable number is below the floor, set shouldSend false and don't pretend there's a deal.
+
 Return JSON only:
 {
   "diagnostic": {
@@ -158,9 +166,10 @@ Return JSON only:
   "negotiation": {
     "subject": "string",
     "targetOffer": number,
-    "openingMessage": "Real LA flipper tone. Reference real comps casually ('similar ones are going for X'). Acknowledge problems plainly. Offer based on WORTH not asking. Never repeat the seller's hype back to them. Make a clean cash offer.",
-    "followUpMessage": "24h nudge, light urgency",
-    "tactic": "explain your angle and why this offer is grounded in real value"
+    "shouldSend": boolean (true only if there's a real offer worth making per the OFFER FLOOR rule; false if the only profitable number would be an insult),
+    "openingMessage": "If shouldSend is true: Real LA flipper tone, reference real comps casually, acknowledge problems plainly, offer a human number >= 45% of asking, clean cash offer, never repeat seller hype. If shouldSend is false: a plain-language note TO FARUK explaining why no offer is worth making here and to walk away.",
+    "followUpMessage": "24h nudge if shouldSend true, otherwise empty string",
+    "tactic": "explain your angle and why this offer is grounded in real value, or why you're walking"
   }
 }
 
