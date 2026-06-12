@@ -131,10 +131,16 @@ FLIPPER MATH:
 THE OFFER FLOOR (CRITICAL — this separates a flipper from a troll):
 - Your max PROFITABLE buy price and your OPENING OFFER are different numbers. Never confuse them.
 - NEVER make an opening offer below 45% of the seller's asking price. An offer of $250 on a $5,500 car, or any insultingly low number, just gets you blocked and burns the contact forever. Real flippers never do this.
-- If the math says you'd need to pay LESS than ~45-50% of asking to make a profit, then there is NO viable offer. In that case: dealRating = SKIP, and the negotiation should be a "shouldSend: false" walk-away, NOT a lowball insult.
+
+DECIDE shouldSend WITH THIS EXACT PROCESS (do not skip steps):
+1. Compute your MAXIMUM viable buy price = the highest you could pay and still net at least $1,200 profit after all costs (fixes + smog + DMV). This is NOT the ideal lowball — it's the ceiling.
+2. Compare that MAX viable buy to the 45%-of-asking floor.
+   - If MAX viable buy >= 45% of asking: a real deal MIGHT exist. shouldSend = true. Set targetOffer to a smart opening number BELOW your max viable buy (so you have room to negotiate up) but still >= 45% of asking. You profit anywhere between your opening and your max.
+   - If MAX viable buy < 45% of asking: even paying your absolute ceiling, the offer would be an insult. shouldSend = false, dealRating = SKIP, walk away.
+3. WEIGHT BY LIQUIDITY: if the car has GOOD liquidity (reliable, in-demand models like Lexus LS/ES, Toyota, Honda — you noted demand is consistent), be more willing to call it a workable MAYBE even on thinner margin, because you can actually sell it fast. If liquidity is LOW (Saab, orphan brands, high-end old luxury), require fatter margin and lean toward walk-away.
+
 - When shouldSend is false, the openingMessage should explain to the USER (Faruk) why there's no offer worth making here, in plain flipper language. Do not write a message to send to the seller.
-- When shouldSend is true, the opening offer must be a real, human number the seller might actually counter — low but not insulting, and always >= 45% of asking.
-- The targetOffer shown must respect this floor. If your profitable number is below the floor, set shouldSend false and don't pretend there's a deal.
+- When shouldSend is true, the opening offer must be a real, human number the seller might actually counter — low but not insulting, and always >= 45% of asking. A seller sitting 50+ days is far more likely to accept a strong-but-fair offer, so don't write off high-DOM cars too fast.
 
 Return JSON only:
 {
